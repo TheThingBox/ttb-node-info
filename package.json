@@ -1,0 +1,19 @@
+{
+  "name": "ttb-node-comments",
+  "version": "0.0.1",
+  "description": "This node allow the user to display comments node.",
+  "node-red": {
+      "nodes": {
+          "info": "ttb-info.js",
+		  "commentdown": "commentdown.js",
+          "commentup": "commentup.js"
+      }
+  },
+  "keywords": [
+    "node-red",
+    "comments",
+	"info"
+  ],
+  "author": "http://www.digitalairways.com/",
+  "license": "http://www.wtfpl.net"
+}

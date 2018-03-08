@@ -1,0 +1,179 @@
+<!--
+  Copyright 2013, 2015 IBM Corp.
+
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+
+  http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+-->
+
+<script type="text/x-red" data-template-name="commentup">
+	<div class="form-row node-input-lang-container-row" style="margin-bottom: 0px;">
+		<div id="node-input-lang-container-div" style="box-sizing: border-box; border-radius: 5px; height: 300px; padding: 5px; border: 1px solid #ccc; overflow-y:scroll;">
+			<ol id="node-input-lang-container" style=" list-style-type:none; margin: 0;"></ol>
+		</div>
+	</div>
+	<div class="form-row">
+		<a href="#" class="editor-button editor-button-small" id="node-input-add-lang" style="margin-top: 4px;"><i class="fa fa-plus"></i> <span data-i18n="commentup.label.addLang"></span></a>
+    </div>
+    <div class="form-row" style="margin-bottom: 0px;">
+        <input type="hidden" id="node-input-info" autofocus="autofocus">
+    </div>
+    <div class="form-tips"><span data-i18n="commentup.tip.text1"></span><i><a href="https://help.github.com/articles/markdown-basics/" target="_new"><span data-i18n="commentup.tip.text2"></span></a></i></div>
+	<div class="form-tips" style="margin-top: 4px;"><span id="node-input-lang-current-lang" /></div>
+</script>
+
+<script type="text/x-red" data-help-name="commentup">
+    <p>A node you can use to add comments to your flows.</p>
+</script>
+
+<script type="text/javascript">
+var config = {
+        category: 'deprecated',
+        color:"#ffffff",
+        defaults: {
+            name: {value:""},
+            info: {value:""},
+			langs: {value:[{key:"en-US",title:"",body:"",isDefault:true}]}
+        },
+        inputs:0,
+        outputs:0,
+        icon: "commentup.png",
+        label: function() {
+            return this.name||"";
+        },
+        labelStyle: function() {
+            return this.name?"node_label_italic":"";
+        },
+        info: function() {
+            var t = this.name || this._("commentup.info.title");
+            var b = this.info || this._("commentup.info.msg");          
+            return "### "+t+"\n"+b;
+        },
+        oneditprepare: function() {
+            var that = this;
+            $( "#node-input-outputs" ).spinner({
+                min:1
+            });
+			that.editors = {};
+			
+			//Update the current language tip
+			if(typeof i18n !== 'undefined'){
+				$('#node-input-lang-current-lang').text(that._("commentup.tip.textCurrentLang", {lang:i18n.detectLanguage()}));
+			}
+			
+			function generateLang(lang) {
+				//lang{key,title,body,isDefault}
+                var container = $('<li />',{style:"background: #fff; margin:0; padding:8px 0px; border-bottom: 1px solid #ccc;"});
+                
+				var row1 = $('<div />').appendTo(container);
+				var row2 = $('<div />',{style:"margin-top:8px;"}).appendTo(container);
+				var row3UID = "node-input-lang-row"+Date.now();
+				var row3 = $("<div />", {class:'node-text-editor',id:row3UID}).appendTo(container);
+                
+				//Row1 - Language input + Title input + [delete button]
+				//<label><i /><span /></label><input />
+				var langLabel = $("<label />",{style:"margin-left: 5px;"}).appendTo(row1)
+				$("<i />", {class:'fa fa-tag'}).appendTo(langLabel);
+				$("<span />").text(" "+that._("commentup.lang")).appendTo(langLabel);
+				$('<input />',{style:"width: 50px",class:"node-input-lang-property-lang",type:"text"}).val(lang.key).prop("disabled",lang.isDefault).appendTo(row1);
+				//<label><i /><span /></label><input />
+				var titleLabel = $("<label />",{style:"width: 80px; margin-left: 5px;"}).appendTo(row1);
+				$("<i />", {class:'fa fa-comment'}).appendTo(titleLabel);
+				$("<span />").text(" "+that._("commentup.title")).appendTo(titleLabel);
+				$('<input />',{style:"width: 100px",class:"node-input-lang-property-title",type:"text","placeholder":that._("commentup.placeholder.title")}).val(lang.title).appendTo(row1);
+
+				if(!lang.isDefault){
+					//<span><a><i /></a></span>
+					var finalspan = $('<span />',{style:"float: right; margin-right: 5px;"}).appendTo(row1);
+					var deleteButton = $('<a />',{href:"#",class:"editor-button editor-button-small", style:"margin-top: 7px; margin-left: 5px;"}).appendTo(finalspan);
+					$('<i />',{class:"fa fa-remove"}).appendTo(deleteButton);
+
+					deleteButton.click(function() {
+						delete that.editors[row3.attr("id")];
+						container.css({"background":"#fee"});
+						container.fadeOut(300, function() {
+							$(this).remove();
+						});
+					});
+				}
+				//End row1
+				
+				//Row2 - Label body
+				//<label><i /><span /></label>
+				var bodyLabel = $("<label />", {style:"margin-left: 5px; width: 100% !important;"}).appendTo(row2);
+				$("<i />",{class:"fa fa-comments"}).appendTo(bodyLabel);
+				$("<span />").text(" "+that._("commentup.desc")).appendTo(bodyLabel);
+				//End row2
+
+				//To create an editor per row, the receiving div must exists so create the container before to add the editor
+                $("#node-input-lang-container").append(container);
+				//Row3 - Editor
+				var editor = RED.editor.createEditor({
+					id: row3UID,
+					mode: 'ace/mode/markdown'
+				});
+				editor.setValue(lang.body, -1);
+				row3.css("height","50px");
+				row3.css("margin-top","5px");
+				editor.resize();
+				//End row3
+				
+				//Store the editor
+				that.editors[row3UID] = editor;
+            };
+			
+			$("#node-input-add-lang").click(function() {
+                generateLang({key:"",title:"",body:"",isDefault:false});
+            });
+
+			if(!that.langs){
+				//Add default lang
+				that.langs = [{key:"en-US",title:that.name,body:that.info,isDefault:true}];
+			}
+			that.langs.forEach(function(l){
+				generateLang(l);
+			});
+        },
+        oneditsave: function() {
+            var node = this;
+			var langs = $("#node-input-lang-container").children();
+			node.langs = [];
+			langs.each(function(i){
+				var lang = $(this);
+				var editorId = lang.find(".node-text-editor").attr('id');
+				var l = {
+					key:lang.find(".node-input-lang-property-lang").val(),
+					title:lang.find(".node-input-lang-property-title").val(),
+					body:node.editors[editorId].getValue(),
+					isDefault:(lang.find(".fa.fa-remove").length?false:true)
+				};
+				delete node.editors[editorId];
+				node.langs.push(l);
+			});
+			//Search for language using i18n
+			var usedLang = "en-US";
+			if(typeof i18n !== 'undefined'){
+				usedLang = i18n.detectLanguage();
+			}
+			
+			var nLang = 0;
+			for(var i=0 ; i<node.langs.length ; i++){
+				if(node.langs[i].key === usedLang){
+					nLang = i;
+				}
+			}
+			node.name = node.langs[nLang].title;
+			$("#node-input-info").val(node.langs[nLang].body);
+        }
+    };
+	
+    RED.nodes.registerType('commentup', config);
+</script>

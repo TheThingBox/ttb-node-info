@@ -1,0 +1,28 @@
+{
+    "ttb-info": {
+		"icon": "Icône",
+		"lang": "Langue",
+        "title": "Titre",
+        "desc": "Corps - va être affiché dans la tab info.",
+        "tip": {
+            "text1": "Note : Le texte ici peut être écrit comme ",
+            "text2": "Github flavoured Markdown",
+			"textCurrentLang": "Note : La langue courante est \"__lang__\""
+        },
+		"label": {
+			"addLang":"Ajouter une langue"
+		},
+        "placeholder": {
+            "title": "Commentaire"
+        },
+        "info": {
+            "title": "Node commentaire",
+            "msg": "Utiliser ce node pour ajouter une simple documentation. \n\nTout ce que vous mettrez sera montré dans cette section info. \n\nVous pouvez utiliser la syntax Markdown afin **d'améliorer** la *présentation*"
+        },
+		"commentIcons": {
+			"comment": "Par défaut",
+			"up": "Ci-dessus",
+			"down": "Ci-dessous"
+		}
+    }
+}

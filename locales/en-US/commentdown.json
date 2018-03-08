@@ -1,0 +1,22 @@
+{
+    "commentdown": {
+		"lang": "Language",
+        "title": "Title",
+        "desc": "Body - will be rendered in info tab.",
+        "tip": {
+            "text1": "Tip: The text here can be styled as ",
+            "text2": "Github flavoured Markdown",
+			"textCurrentLang": "Tip: Current language is \"__lang__\""
+        },
+		"label": {
+			"addLang":"Add a language"
+		},
+        "placeholder": {
+            "title": "Comment"
+        },
+        "info": {
+            "title": "Comment node",
+            "msg": "Use this node to add simple documentation.\n\nAnything you add will be rendered in this info panel.\n\nYou may use Markdown syntax to **enhance** the *presentation*."
+        }
+    }
+}
